@@ -60,7 +60,7 @@ export default function DashboardClient({
         <Link href="/pos" className="text-amber-800 text-xs font-semibold underline whitespace-nowrap">{t("viewPOs")}</Link>
       </div>}
 
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4 mb-6">
         <Kpi title={t("activeProjects")} value={String(data.activeProjectsCount)} subtitle={formatCurrency(data.totalContractValue)} icon={<Briefcase className="w-4 h-4" />} />
         <Kpi title={t("estimatedProfit")} value={formatCurrency(data.totalProfit)} subtitle={`${t("margin")} ${Math.round(data.margin)}%`} icon={<TrendingUp className="w-4 h-4" />} valueClass="text-green-600" />
         <Kpi title={t("monthExpenses")} value={formatCurrency(data.expensesThisMonth)} subtitle="" icon={<DollarSign className="w-4 h-4" />} />
@@ -84,9 +84,9 @@ export default function DashboardClient({
 }
 
 function EmptyPanel({ title, href, label, empty }: { title: string; href: string; label: string; empty: boolean }) {
-  return <div className="bg-white rounded-xl border border-slate-200"><div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center"><h2 className="font-semibold">{title}</h2><Link href={href} className="text-brand-600 text-sm font-medium">{label}</Link></div><div className="px-5 py-8 text-sm text-slate-400 text-center">{empty ? "Sin datos todavía" : "Sin registros recientes"}</div></div>;
+  return <div className="min-w-0 bg-white rounded-xl border border-slate-200"><div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center gap-3"><h2 className="min-w-0 truncate font-semibold">{title}</h2><Link href={href} className="shrink-0 text-brand-600 text-sm font-medium">{label}</Link></div><div className="px-5 py-8 text-sm text-slate-400 text-center">{empty ? "Sin datos todavía" : "Sin registros recientes"}</div></div>;
 }
 
 function Kpi({ title, value, subtitle, icon, valueClass }: { title: string; value: string; subtitle: string; icon: React.ReactNode; valueClass?: string }) {
-  return <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5"><div className="flex items-center gap-2 text-slate-500 mb-1">{icon}<p className="text-xs">{title}</p></div><p className={`text-xl md:text-2xl font-bold ${valueClass || ""}`}>{value}</p>{subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}</div>;
+  return <div className="min-w-0 bg-white rounded-xl border border-slate-200 p-4 md:p-5"><div className="flex min-w-0 items-center gap-2 text-slate-500 mb-1">{icon}<p className="min-w-0 truncate text-xs">{title}</p></div><p className={`truncate text-xl md:text-2xl font-bold ${valueClass || ""}`}>{value}</p>{subtitle && <p className="truncate text-xs text-slate-400 mt-1">{subtitle}</p>}</div>;
 }
