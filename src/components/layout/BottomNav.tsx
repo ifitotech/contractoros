@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Briefcase, FileText, Menu, CalendarDays } from "lucide-react";
+import { Home, Briefcase, FileText, Menu, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 
@@ -13,9 +13,9 @@ export function BottomNav() {
   const items = [
     { href: "/dashboard", label: t("navHome"), icon: Home },
     { href: "/projects", label: t("navProjects"), icon: Briefcase },
-    { href: "/calendar", label: t("calendar"), icon: CalendarDays },
     { href: "/quotes", label: t("navQuotes"), icon: FileText },
-    { href: "/more", label: t("myCompany"), icon: Menu },
+    { href: "/my-company", label: t("myCompany"), icon: Building2 },
+    { href: "/more", label: "More", icon: Menu },
   ];
 
   return (

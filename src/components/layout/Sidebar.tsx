@@ -34,7 +34,8 @@ export function Sidebar() {
 
   const managementNav = [
     { href: "/employees", label: t("navEmployees"), icon: UserCog },
-    { href: "/more", label: t("myCompany"), icon: Settings },
+    { href: "/my-company", label: t("myCompany"), icon: Settings },
+    { href: "/more", label: "More", icon: Settings },
   ];
 
   return (
