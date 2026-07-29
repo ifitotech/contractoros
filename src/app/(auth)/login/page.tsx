@@ -40,7 +40,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-brand-800 to-brand-900 text-white">
-      <div className="absolute top-4 right-4">
+      <div className="absolute right-4 top-[calc(env(safe-area-inset-top)+1rem)] z-10">
         <LanguageSwitcher />
       </div>
       <div className="flex-1 flex flex-col justify-center px-6 max-w-md mx-auto w-full">
