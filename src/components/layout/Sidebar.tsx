@@ -24,7 +24,7 @@ export function Sidebar() {
     { href: "/dashboard", label: t("navHome"), icon: Home },
     { href: "/projects", label: t("navProjects"), icon: Briefcase },
     { href: "/clients", label: t("navClients"), icon: Users },
-    { href: "/quotes", label: t("navQuotes"), icon: FileText },
+    { href: "/quotes", label: "Supply & Purchase", icon: FileText },
   ];
 
   const operationsNav = [

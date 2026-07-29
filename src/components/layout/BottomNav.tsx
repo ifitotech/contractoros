@@ -13,7 +13,7 @@ export function BottomNav() {
   const items = [
     { href: "/dashboard", label: t("navHome"), icon: Home },
     { href: "/clients", label: t("navClients"), icon: Users },
-    { href: "/quotes", label: t("navQuotes"), icon: FileText },
+    { href: "/quotes", label: "Supply & Purchase", icon: FileText },
     { href: "/my-company", label: t("myCompany"), icon: Building2 },
     { href: "/more", label: "More", icon: Menu },
   ];

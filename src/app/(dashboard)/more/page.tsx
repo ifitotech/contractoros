@@ -28,7 +28,7 @@ export default function MorePage() {
       title: "Work & sales",
       items: [
         { href: "/projects", label: t("navProjects"), icon: Briefcase },
-        { href: "/quotes", label: t("navQuotes"), icon: FileText },
+        { href: "/quotes", label: "Supply & Purchase", icon: FileText },
         { href: "/supply-requests", label: "Supply pricing requests", icon: ShoppingCart },
       ],
     },
