@@ -26,7 +26,7 @@ export function BottomNav() {
         {items.map((item) => {
           if (item.isMain) {
             return <div key={item.href} className="relative flex flex-col items-center -mt-5">
-              {createOpen && <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-60 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+              {createOpen && <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] left-4 right-4 z-50 mx-auto w-auto max-w-sm rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
                 <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("create")}</p>
                 {[{ href: "/quotes/new", label: t("createServiceQuote") }, { href: "/quotes/estimator", label: t("createPlanEstimator") }, { href: "/supply-requests", label: t("createSupplyRequest") }, { href: "/projects/new", label: t("newProject") }, { href: "/clients/new", label: t("newClient") }, { href: "/expenses/new", label: t("newExpense") }].map((action) => <Link key={action.href} href={action.href} onClick={() => setCreateOpen(false)} className="block rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-brand-50">{action.label}</Link>)}
               </div>}
