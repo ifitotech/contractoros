@@ -21,7 +21,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 safe-bottom">
+    <nav className="md:hidden fixed bottom-0 inset-x-0 w-full max-w-full overflow-x-clip bg-white border-t border-slate-200 z-40 safe-bottom">
       <div className="flex justify-around py-2">
         {items.map((item) => {
           if (item.isMain) {
