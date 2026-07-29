@@ -12,6 +12,10 @@ import {
   LogOut,
   ChevronRight,
   HardHat,
+  Briefcase,
+  CalendarDays,
+  FileText,
+  ShoppingCart,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/provider";
 import { logoutAction } from "@/app/(auth)/actions";
@@ -21,11 +25,26 @@ export default function MorePage() {
 
   const sections = [
     {
+      title: "Work & sales",
+      items: [
+        { href: "/projects", label: t("navProjects"), icon: Briefcase },
+        { href: "/quotes", label: t("navQuotes"), icon: FileText },
+        { href: "/supply-requests", label: "Supply pricing requests", icon: ShoppingCart },
+      ],
+    },
+    {
       title: t("myCompany"),
       items: [
         { href: "/expenses", label: t("navExpenses"), icon: Receipt },
         { href: "/pos", label: t("navPOs"), icon: CreditCard },
         { href: "/invoices", label: "Invoices", icon: CreditCard },
+      ],
+    },
+    {
+      title: "Operations",
+      items: [
+        { href: "/calendar", label: t("calendar"), icon: CalendarDays },
+        { href: "/files", label: "Files & Photos", icon: FileText },
       ],
     },
     {

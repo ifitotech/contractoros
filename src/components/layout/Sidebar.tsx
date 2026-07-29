@@ -13,6 +13,9 @@ import {
   BarChart3,
   Settings,
   HardHat,
+  Receipt,
+  FolderOpen,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
@@ -21,15 +24,22 @@ export function Sidebar() {
   const pathname = usePathname();
   const { t } = useI18n();
 
-  const mainNav = [
+  const workNav = [
     { href: "/dashboard", label: t("navHome"), icon: Home },
     { href: "/projects", label: t("navProjects"), icon: Briefcase },
-  { href: "/calendar", label: t("calendar"), icon: CalendarDays },
-    { href: "/invoices", label: "Invoices", icon: FileText },
-    { href: "/files", label: "Files & Photos", icon: FileText },
     { href: "/clients", label: t("navClients"), icon: Users },
     { href: "/quotes", label: t("navQuotes"), icon: FileText },
+  ];
+
+  const financeNav = [
+    { href: "/invoices", label: "Invoices", icon: Receipt },
+    { href: "/expenses", label: t("navExpenses"), icon: DollarSign },
     { href: "/pos", label: t("navPOs"), icon: ClipboardList, badge: 2 },
+  ];
+
+  const operationsNav = [
+    { href: "/calendar", label: t("calendar"), icon: CalendarDays },
+    { href: "/files", label: "Files & Photos", icon: FolderOpen },
   ];
 
   const managementNav = [
@@ -53,38 +63,10 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p className="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-          {t("mainSection")}
-        </p>
-        {mainNav.map((item) => {
-          const active = pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition",
-                active
-                  ? "bg-brand-50 text-brand-700 font-semibold"
-                  : "text-slate-700 hover:bg-slate-50"
-              )}
-            >
-              <item.icon
-                className={cn(
-                  "w-5 h-5",
-                  active ? "text-brand-600" : "text-slate-400"
-                )}
-              />
-              {item.label}
-              {item.badge ? (
-                <span className="ml-auto bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                  {item.badge}
-                </span>
-              ) : null}
-            </Link>
-          );
-        })}
-
+        <NavSection label="Work" items={workNav} pathname={pathname} />
+        <NavSection label="Finance" items={financeNav} pathname={pathname} />
+        <NavSection label="Operations" items={operationsNav} pathname={pathname} />
+        {/* Keep management routes visible without removing any existing module. */}
         <p className="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-5 mb-2">
           {t("managementSection")}
         </p>
@@ -126,4 +108,14 @@ export function Sidebar() {
       </div>
     </aside>
   );
+}
+
+function NavSection({ label, items, pathname }: { label: string; items: { href: string; label: string; icon: typeof Home; badge?: number }[]; pathname: string }) {
+  return <>
+    <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 mt-5 first:mt-0">{label}</p>
+    {items.map((item) => {
+      const active = pathname === item.href || pathname.startsWith(item.href + "/");
+      return <Link key={item.href} href={item.href} className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition", active ? "bg-brand-50 text-brand-700 font-semibold" : "text-slate-700 hover:bg-slate-50")}><item.icon className={cn("h-5 w-5", active ? "text-brand-600" : "text-slate-400")} />{item.label}{item.badge ? <span className="ml-auto rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">{item.badge}</span> : null}</Link>;
+    })}
+  </>;
 }
