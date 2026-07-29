@@ -8,14 +8,10 @@ import {
   CalendarDays,
   Users,
   FileText,
-  ClipboardList,
   UserCog,
-  BarChart3,
   Settings,
   HardHat,
-  Receipt,
   FolderOpen,
-  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
@@ -31,12 +27,6 @@ export function Sidebar() {
     { href: "/quotes", label: t("navQuotes"), icon: FileText },
   ];
 
-  const financeNav = [
-    { href: "/invoices", label: "Invoices", icon: Receipt },
-    { href: "/expenses", label: t("navExpenses"), icon: DollarSign },
-    { href: "/pos", label: t("navPOs"), icon: ClipboardList, badge: 2 },
-  ];
-
   const operationsNav = [
     { href: "/calendar", label: t("calendar"), icon: CalendarDays },
     { href: "/files", label: "Files & Photos", icon: FolderOpen },
@@ -44,7 +34,6 @@ export function Sidebar() {
 
   const managementNav = [
     { href: "/employees", label: t("navEmployees"), icon: UserCog },
-    { href: "/reports", label: t("navReports"), icon: BarChart3 },
     { href: "/more", label: t("myCompany"), icon: Settings },
   ];
 
@@ -64,7 +53,6 @@ export function Sidebar() {
 
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         <NavSection label="Work" items={workNav} pathname={pathname} />
-        <NavSection label="Finance" items={financeNav} pathname={pathname} />
         <NavSection label="Operations" items={operationsNav} pathname={pathname} />
         {/* Keep management routes visible without removing any existing module. */}
         <p className="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-5 mb-2">
