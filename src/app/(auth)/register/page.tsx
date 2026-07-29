@@ -17,6 +17,8 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [phone, setPhone] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -31,8 +33,8 @@ export default function RegisterPage() {
     formData.set("fullName", fullName);
     formData.set("email", email);
     formData.set("password", password);
-    formData.set("companyName", String(formData.get("company_field_7x") || ""));
-    formData.set("phone", String(formData.get("phone_field_9q") || ""));
+    formData.set("companyName", companyName);
+    formData.set("phone", phone);
     const result = await registerAction(formData);
     if (result?.error) {
       setError(result.error);
@@ -100,20 +102,26 @@ export default function RegisterPage() {
               <div>
                 <label className="text-xs text-brand-200 mb-1 block">{t("companyName")}</label>
                 <input
-                  name="company_field_7x"
+                  name="companyNameField"
                   type="text"
                   required
-                  autoComplete="new-password"
+                  autoComplete="off"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  data-form-type="other"
                   className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/40"
                 />
               </div>
               <div>
                 <label className="text-xs text-brand-200 mb-1 block">{t("phone")}</label>
                 <input
-                  name="phone_field_9q"
-                  type="text"
+                  name="phoneField"
+                  type="tel"
                   inputMode="tel"
-                  autoComplete="new-password"
+                  autoComplete="off"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  data-form-type="other"
                   className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/40"
                 />
               </div>
