@@ -1,6 +1,23 @@
 -- ContractorOS - Supply Quotes foundation
 -- Incremental migration. Does not replace or remove existing objects.
 
+-- Ensure the existing multi-tenant helper functions are available even when
+-- earlier policy migrations were not run in the same SQL editor session.
+CREATE OR REPLACE FUNCTION get_user_company_ids()
+RETURNS SETOF UUID AS $$
+  SELECT company_id FROM company_members
+  WHERE user_id = auth.uid() AND is_active = true;
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+CREATE OR REPLACE FUNCTION get_user_role(p_company_id UUID)
+RETURNS TEXT AS $$
+  SELECT role FROM company_members
+  WHERE user_id = auth.uid()
+    AND company_id = p_company_id
+    AND is_active = true
+  LIMIT 1;
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
 CREATE TABLE IF NOT EXISTS suppliers (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
