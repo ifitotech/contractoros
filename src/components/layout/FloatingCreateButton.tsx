@@ -16,7 +16,7 @@ export function FloatingCreateButton() {
     { href: "/projects/new", label: t("newProject"), icon: CalendarPlus },
   ];
 
-  return <div className="fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-4 z-50 md:bottom-6 md:right-6">
+  return <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom,0px))] right-4 z-50 md:bottom-6 md:right-6">
     {open && <div className="absolute bottom-16 right-0 w-64 rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/15">
       <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">{t("create")}</p>
       {actions.map((action) => <Link key={action.href} href={action.href} onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"><action.icon className="h-4 w-4 text-brand-600" />{action.label}</Link>)}
