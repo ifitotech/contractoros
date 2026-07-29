@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { ToastContainer } from "@/components/ui/Toast";
+import { FloatingCreateButton } from "@/components/layout/FloatingCreateButton";
 
 export default function DashboardLayout({
   children,
@@ -14,6 +15,7 @@ export default function DashboardLayout({
         {children}
       </main>
       <BottomNav />
+      <FloatingCreateButton />
       <ToastContainer />
     </div>
   );
