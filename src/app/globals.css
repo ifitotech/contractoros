@@ -24,6 +24,20 @@
     padding-top: env(safe-area-inset-top, 0px);
   }
 
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
   img,
   svg,
   video,
@@ -40,6 +54,13 @@
   .dark .text-slate-700, .dark .text-slate-600 { @apply text-slate-300; }
   .dark .text-slate-500 { color: rgb(148 163 184); }
   .dark .text-slate-400 { color: rgb(148 163 184); }
+}
+
+@layer components {
+  .page-container { @apply min-w-0 p-4 md:p-8; }
+  .surface-card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
+  .section-title { @apply text-base font-bold tracking-tight text-slate-900; }
+  .section-subtitle { @apply mt-0.5 text-xs text-slate-500; }
 }
 
 /* Mobile safe areas */
