@@ -32,7 +32,7 @@ export default function NewQuotePage() {
   useEffect(() => {
     const requestedType = new URLSearchParams(window.location.search).get("type");
     if (requestedType === "materials") {
-      router.replace("/supply-requests");
+      router.replace("/quotes/material-list");
       return;
     }
     if (["service", "materials", "plan_estimate", "complete"].includes(requestedType || "")) {
