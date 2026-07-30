@@ -31,6 +31,10 @@ export default function NewQuotePage() {
   const [quoteType, setQuoteType] = useState("complete");
   useEffect(() => {
     const requestedType = new URLSearchParams(window.location.search).get("type");
+    if (requestedType === "materials") {
+      router.replace("/supply-requests");
+      return;
+    }
     if (["service", "materials", "plan_estimate", "complete"].includes(requestedType || "")) {
       setQuoteType(requestedType as string);
       window.history.replaceState(null, "", "/quotes/new");
