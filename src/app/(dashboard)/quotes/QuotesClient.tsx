@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, Plus, ShoppingCart, Wrench, FileText, Layers, ClipboardList, ArrowUpRight } from "lucide-react";
+import { ChevronDown, Plus, Ruler, ShoppingCart, Wrench, FileText, Layers, ClipboardList, ArrowUpRight } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { QuoteStatusBadge } from "@/components/shared/StatusBadge";
 import { formatCurrency } from "@/lib/utils";
