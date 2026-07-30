@@ -16,6 +16,8 @@ interface LineItem {
   quantity: number;
   unit_price: number;
   part_number: string;
+  unit: string;
+  notes: string;
 }
 
 export default function NewQuotePage() {
@@ -24,7 +26,7 @@ export default function NewQuotePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<LineItem[]>([
-    { id: "1", description: "", quantity: 1, unit_price: 0, part_number: "" },
+    { id: "1", description: "", quantity: 1, unit_price: 0, part_number: "", unit: "each", notes: "" },
   ]);
   const [quoteType, setQuoteType] = useState("complete");
   useEffect(() => {
@@ -43,7 +45,7 @@ export default function NewQuotePage() {
   function addItem() {
     setItems((prev) => [
       ...prev,
-      { id: String(Date.now()), description: "", quantity: 1, unit_price: 0, part_number: "" },
+      { id: String(Date.now()), description: "", quantity: 1, unit_price: 0, part_number: "", unit: "each", notes: "" },
     ]);
   }
 
@@ -65,7 +67,7 @@ export default function NewQuotePage() {
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData(form);
     formData.set("items", JSON.stringify(
-      items.map(({ description, quantity, unit_price, part_number }) => ({ description, quantity, unit_price, part_number }))
+      items.map(({ description, quantity, unit_price, part_number, unit, notes }) => ({ description, quantity, unit_price, part_number, unit, notes }))
     ));
     const result = await createQuoteAction(formData);
     // Keep the local demo flow usable when Supabase is not configured.
@@ -131,6 +133,7 @@ export default function NewQuotePage() {
               <Plus className="w-4 h-4" /> {t("addLine")}
             </button>
           </div>
+          <p className="text-xs text-slate-500 mb-3">Add a catalog item when available, or enter any custom material/service manually.</p>
 
           <div className="space-y-3">
             {items.map((item, idx) => (
@@ -151,10 +154,23 @@ export default function NewQuotePage() {
                     className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     required
                   />
+                  <input
+                    type="text"
+                    value={item.notes}
+                    onChange={(e) => updateItem(item.id, "notes", e.target.value)}
+                    placeholder="Optional item notes"
+                    className="w-full mt-2 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
                 </div>
                 <div className="col-span-12 sm:col-span-3">
                   {idx === 0 && <label className="text-[10px] text-slate-400 uppercase">Part Number</label>}
                   <input type="text" value={item.part_number} onChange={(e) => updateItem(item.id, "part_number", e.target.value)} placeholder="E.g. BR120" className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                </div>
+                <div className="col-span-6 sm:col-span-2">
+                  {idx === 0 && <label className="text-[10px] text-slate-400 uppercase">Unit</label>}
+                  <select value={item.unit} onChange={(e) => updateItem(item.id, "unit", e.target.value)} className="w-full border border-slate-200 rounded-lg px-2 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="each">Each</option><option value="ft">ft</option><option value="box">Box</option><option value="roll">Roll</option><option value="hour">Hour</option><option value="lot">Lot</option>
+                  </select>
                 </div>
                 <div className="col-span-4 sm:col-span-2">
                   {idx === 0 && (
