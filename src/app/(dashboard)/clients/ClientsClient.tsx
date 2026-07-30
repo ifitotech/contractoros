@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Phone, Mail, Briefcase, FileText, Receipt, Users, ArrowUpRight, Wrench } from "lucide-react";
+import { Plus, Phone, Mail, Briefcase, FileText, Receipt, Users, ArrowUpRight, Wrench, Ruler } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { useI18n } from "@/lib/i18n/provider";
@@ -24,6 +24,7 @@ export default function ClientsClient({ clients, demo = false }: { clients?: Cli
       <ClientHubLink href="/quotes" icon={<FileText className="h-4 w-4" />} title="Service quotes" detail="Quotes for clients" />
       <ClientHubLink href="/invoices" icon={<Receipt className="h-4 w-4" />} title="Invoices" detail="Client billing" />
       <ClientHubLink href="/clients/new" icon={<Users className="h-4 w-4" />} title="New client" detail="Add a customer" />
+      <ClientHubLink href="/quotes/estimator" icon={<Ruler className="h-4 w-4" />} title="Plan estimator" detail="Estimate client work" />
     </div>
     <section className="surface-card mb-6 p-4 md:p-5"><div className="mb-3"><p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Customer work</p><h2 className="mt-1 text-lg font-bold">Customer service</h2><p className="mt-1 text-xs text-slate-500">Quotes and billing your company sends to clients.</p></div><div className="grid grid-cols-2 gap-2"><ClientAction href="/quotes/new?type=service" label={t("createServiceQuote")} icon={<Wrench className="h-4 w-4" />} /><ClientAction href="/quotes" label="Customer quote history" icon={<FileText className="h-4 w-4" />} /></div></section>
     {demo && <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-sm text-blue-800">{t("demoMode")}: configura Supabase para guardar clientes reales.</div>}

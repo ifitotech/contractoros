@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { CalendarPlus, ClipboardList, FileText, Plus, Ruler, ShoppingCart, X } from "lucide-react";
+import { CalendarPlus, ClipboardList, FileText, Plus, ShoppingCart, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n/provider";
 
 export function FloatingCreateButton() {
@@ -10,7 +10,6 @@ export function FloatingCreateButton() {
   const [open, setOpen] = useState(false);
   const actions = [
     { href: "/quotes/new", label: t("createServiceQuote"), icon: FileText },
-    { href: "/quotes/estimator", label: t("createPlanEstimator"), icon: Ruler },
     { href: "/supply-requests", label: t("createSupplyRequest"), icon: ShoppingCart },
     { href: "/pos/new", label: "New purchase order", icon: ClipboardList },
     { href: "/projects/new", label: t("newProject"), icon: CalendarPlus },
