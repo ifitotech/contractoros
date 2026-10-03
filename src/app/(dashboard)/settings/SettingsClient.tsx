@@ -5,7 +5,7 @@ import { PlanCards } from "@/components/shared/PlanCard";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/lib/i18n/provider";
-import { updateCompanyAction, updateProfileAction } from "@/app/(dashboard)/actions";
+import { updateCompanyAction, updateProfileAction } from "@/app/(dashboard)/settings/actions";
 import { useState } from "react";
 import { useTheme, type Theme } from "@/lib/theme/provider";
 

@@ -40,17 +40,21 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPublic = matches(pathname, PUBLIC_PREFIXES);
 
-  const redirectTo = (path: string) => {
+  const redirectTo = (path: string, search = "") => {
     const url = request.nextUrl.clone();
     url.pathname = path;
-    url.search = "";
+    url.search = search;
     const response = NextResponse.redirect(url);
     // Keep any refreshed auth cookies on the redirect response.
     supabaseResponse.cookies.getAll().forEach((cookie) => response.cookies.set(cookie));
     return response;
   };
 
-  if (!user && !isPublic) return redirectTo("/login");
+  // Someone who is not signed in is sent to the login and brought back to where they were going afterwards.
+  if (!user && !isPublic) {
+    const wanted = pathname + request.nextUrl.search;
+    return redirectTo("/login", wanted !== "/" && !pathname.startsWith("/api") ? `?next=${encodeURIComponent(wanted)}` : "");
+  }
   if (user && (pathname === "/" || matches(pathname, AUTH_ONLY_PREFIXES))) return redirectTo("/dashboard");
 
   return supabaseResponse;

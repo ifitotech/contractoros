@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentMember } from "@/lib/auth";
 import { getEmployees, getPendingInvitations } from "@/lib/services/employees";
 import EmployeesClient from "./EmployeesClient";
+import { logError } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,8 @@ export default async function EmployeesPage() {
         invitations={invitations}
       />
     );
-  } catch {
+  } catch (error) {
+    logError("/employees", error);
     return <EmployeesClient members={[]} invitations={[]} error />;
   }
 }

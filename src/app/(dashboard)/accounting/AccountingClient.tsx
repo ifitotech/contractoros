@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { LocalDateTime } from "@/components/shared/LocalDateTime";
 import { useI18n } from "@/lib/i18n/provider";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
@@ -60,7 +61,7 @@ export default function AccountingClient({ projects, log, error = false }: { pro
     {log.length === 0 ? <p className="text-sm text-slate-500">{t("acctNoHistory")}</p> :
       <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">{log.map((l) => {
         const ex = Array.isArray(l.exporter) ? l.exporter[0] : l.exporter;
-        return <li key={l.id} className="px-4 py-3 text-sm"><div className="font-medium">{labelOf(l.dataset)} · {l.format.toUpperCase()} · {l.row_count} {t("acctRows")}</div><div className="text-xs text-slate-500">{new Date(l.created_at).toLocaleString()}{ex?.full_name ? ` · ${ex.full_name}` : ""}{l.date_from || l.date_to ? ` · ${l.date_from ?? "…"} → ${l.date_to ?? "…"}` : ""}</div></li>;
+        return <li key={l.id} className="px-4 py-3 text-sm"><div className="font-medium">{labelOf(l.dataset)} · {l.format.toUpperCase()} · {l.row_count} {t("acctRows")}</div><div className="text-xs text-slate-500"><LocalDateTime value={l.created_at} />{ex?.full_name ? ` · ${ex.full_name}` : ""}{l.date_from || l.date_to ? ` · ${l.date_from ?? "…"} → ${l.date_to ?? "…"}` : ""}</div></li>;
       })}</ul>}
   </div>;
 }

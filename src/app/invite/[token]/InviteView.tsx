@@ -5,7 +5,7 @@ import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useI18n } from "@/lib/i18n/provider";
-import { acceptInvitationAction } from "@/app/(dashboard)/actions";
+import { acceptInvitationAction } from "@/app/(dashboard)/employees/actions";
 import { logoutAction } from "@/app/(auth)/actions";
 
 type Info = { company: string; email: string; role: string };

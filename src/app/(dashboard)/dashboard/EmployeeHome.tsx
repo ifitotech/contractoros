@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Camera, MapPin, Package, ShoppingCart } from "lucide-react";
+import { Camera, MapPin, Package, Search } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { POStatusBadge } from "@/components/shared/StatusBadge";
 import { RequestStatusBadge } from "@/components/shared/RequestStatusBadge";
@@ -27,16 +27,17 @@ export default function EmployeeHome({ firstName, companyName, projects, myPOs, 
       {companyName && <p className="mt-1 text-sm text-slate-500">{companyName}</p>}
     </header>
 
+    <form action="/search" role="search" className="relative mb-5"><Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" /><input name="q" autoComplete="off" aria-label={t("searchEverything")} placeholder={t("searchEverything")} className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-9 pr-3 text-base outline-none focus:border-brand-500" /></form>
+
     {pendingReceipts.length > 0 && <section aria-label={t("empReceiptsDue")} className="mb-5 rounded-2xl border-2 border-red-300 bg-red-50 p-4">
       <p className="flex items-center gap-2 font-semibold text-red-800"><Camera className="h-5 w-5" />{t("empReceiptsDue")} ({pendingReceipts.length})</p>
       <p className="mt-1 text-sm text-red-700">{pendingReceipts.length >= 2 ? t("empReceiptsBlocked") : t("empReceiptsHint")}</p>
       <ul className="mt-3 space-y-2">{pendingReceipts.map((p) => <li key={p.id}><Link href={`/pos/${p.id}`} className="flex min-h-12 items-center justify-between gap-3 rounded-xl border border-red-200 bg-white px-3 py-2 text-sm"><span className="min-w-0 truncate font-medium">{p.number} · {p.vendor_name}</span><span className="shrink-0 font-semibold text-red-700">{t("takeReceiptPhoto")}</span></Link></li>)}</ul>
     </section>}
 
-    <section aria-label={t("whatToDo")} className="mb-6 grid grid-cols-2 gap-3">
-      {permissions.can_request_material && <Link href="/material" className={`${big} bg-brand-600 text-white`}><Package className="h-6 w-6" /><span>{t("empAskMaterial")}</span></Link>}
-      {permissions.can_create_po && <Link href="/pos/new" className={`${big} border border-slate-200 bg-white text-slate-900`}><ShoppingCart className="h-6 w-6 text-brand-600" /><span>{t("empBuy")}</span>{permissions.po_limit != null && <span className="text-xs font-normal text-slate-500">{t("empBuyLimit", { amount: String(permissions.po_limit) })}</span>}</Link>}
-    </section>
+    {(permissions.can_request_material || permissions.can_create_po) && <section aria-label={t("whatToDo")} className="mb-6">
+      <Link href="/material" className={`${big} w-full bg-brand-600 text-white`}><Package className="h-6 w-6" /><span>{permissions.can_create_po ? t("empAskOrBuy") : t("empAskMaterial")}</span>{permissions.can_create_po && permissions.po_limit != null && <span className="text-xs font-normal text-white/80">{t("empBuyLimit", { amount: String(permissions.po_limit) })}</span>}</Link>
+    </section>}
 
     <section className="mb-6">
       <h2 className="mb-2 font-semibold">{t("empMyOrders")}</h2>

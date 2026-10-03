@@ -19,35 +19,6 @@ async function addHistory(poId: string, from: string | null, to: string, userId:
 }
 
 /**
- * Quick purchase (field buy, receipt comes later) or, when the amount is over the person's PO limit,
- * a PO that waits for Owner/Manager approval. `withinLimit` is decided by the caller from the person's permissions;
- * the database re-checks it.
- */
-export async function createPurchaseOrder(
-  companyId: string,
-  userId: string,
-  data: { project_id: string; vendor_name: string; category?: string; description?: string; estimated_amount?: number },
-  withinLimit = true
-) {
-  const supabase = await createClient();
-  const number = await nextPONumber(companyId);
-  const status: POStatus = withinLimit ? "pending_document" : "pending_approval";
-
-  const { data: po, error } = await supabase
-    .from("purchase_orders")
-    .insert({
-      company_id: companyId, project_id: data.project_id, created_by: userId, number, vendor_name: data.vendor_name,
-      category: data.category ?? null, description: data.description ?? null, estimated_amount: data.estimated_amount ?? null,
-      status, waiting_on: withinLimit ? "employee" : "owner",
-    })
-    .select()
-    .single();
-  if (error) throw error;
-  await addHistory(po.id, null, status, userId, null);
-  return po;
-}
-
-/**
  * "Buy now": the person already knows where to buy, so the material list becomes a purchase order with its lines.
  * Same rules as a field purchase: inside the person's limit it waits for the receipt, over it waits for approval.
  */
@@ -260,19 +231,13 @@ export async function transitionPOStatus(poId: string, companyId: string, userId
   await move(companyId, userId, poId, [po.status as POStatus], {}, toStatus, notes);
 }
 
-export async function requestException(poId: string, companyId: string, userId: string, reason: string) {
-  if (!reason.trim()) throw new Error("exception_reason_required");
-  await transitionPOStatus(poId, companyId, userId, "exception_requested", reason);
-  const supabase = await createClient();
-  await supabase.from("purchase_orders").update({ exception_reason: reason, waiting_on: "owner" }).eq("id", poId);
-}
-
 const PO_LIST = `id, number, vendor_name, description, estimated_amount, final_amount, status, waiting_on, expected_delivery, created_at, project_id, project:projects(id, name), creator:profiles!purchase_orders_created_by_fkey(full_name)`;
 
-export async function getPurchaseOrders(companyId: string, statusFilter?: string) {
+export async function getPurchaseOrders(companyId: string, statusFilter?: string, projectId?: string) {
   const supabase = await createClient();
   let query = supabase.from("purchase_orders").select(PO_LIST).eq("company_id", companyId).order("created_at", { ascending: false }).limit(300);
   if (statusFilter) query = query.eq("status", statusFilter);
+  if (projectId) query = query.eq("project_id", projectId);
   const { data, error } = await query;
   if (error) throw error;
   return data;

@@ -11,7 +11,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 import {
   PERMISSION_TEMPLATES, type PermissionKey, type PermissionTemplate, type Permissions,
 } from "@/lib/permissions";
-import { setMemberActiveAction, setProjectAssignmentAction, updateMemberPermissionsAction, updateMemberRoleAction } from "@/app/(dashboard)/actions";
+import { setMemberActiveAction, setProjectAssignmentAction, updateMemberPermissionsAction, updateMemberRoleAction } from "@/app/(dashboard)/employees/actions";
 
 type Member = {
   id: string; userId: string; role: string; isActive: boolean;

@@ -4131,3 +4131,172 @@ REVOKE ALL ON FUNCTION trg_po_block_pending_receipts() FROM PUBLIC, anon, authen
 
 DROP TRIGGER IF EXISTS po_block_pending_receipts ON purchase_orders;
 CREATE TRIGGER po_block_pending_receipts BEFORE INSERT ON purchase_orders FOR EACH ROW EXECUTE FUNCTION trg_po_block_pending_receipts();
+
+-- ===== supabase/migrations/20260817000027_proposal_approved_sets_contract.sql =====
+-- BidPower — An approved proposal moves its project forward.
+-- The customer's link already does this. This trigger makes the same happen when the proposal is approved by hand:
+-- a project without a contract value takes the proposal's total, and a lead/quoted project becomes approved.
+-- A contract value someone already set is never overwritten.
+
+CREATE OR REPLACE FUNCTION trg_quote_approved_updates_project()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NEW.project_id IS NULL OR NEW.status IS DISTINCT FROM 'approved' OR OLD.status IS NOT DISTINCT FROM 'approved' THEN
+    RETURN NEW;
+  END IF;
+  UPDATE projects
+     SET contract_value = CASE WHEN COALESCE(contract_value, 0) = 0 THEN NEW.total ELSE contract_value END,
+         status = CASE WHEN status IN ('lead', 'quoted') THEN 'approved' ELSE status END,
+         updated_at = NOW()
+   WHERE id = NEW.project_id AND company_id = NEW.company_id;
+  RETURN NEW;
+END;
+$$;
+REVOKE ALL ON FUNCTION trg_quote_approved_updates_project() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS quote_approved_updates_project ON quotes;
+CREATE TRIGGER quote_approved_updates_project AFTER UPDATE OF status ON quotes
+  FOR EACH ROW EXECUTE FUNCTION trg_quote_approved_updates_project();
+
+-- ===== supabase/migrations/20260818000028_po_no_exception_states.sql =====
+-- BidPower — The receipt is mandatory, so the "exception" way around it is closed.
+-- The three exception statuses stay in the status list (existing rows, if any, keep working) but no purchase order can
+-- enter them any more. A small trigger is used instead of rewriting the whole transition rules.
+
+CREATE OR REPLACE FUNCTION trg_po_no_exception_states()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.status IN ('exception_requested', 'exception_approved', 'exception_rejected')
+     AND (TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM NEW.status) THEN
+    RAISE EXCEPTION 'po_exception_removed';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS po_no_exception_states ON purchase_orders;
+CREATE TRIGGER po_no_exception_states BEFORE INSERT OR UPDATE OF status ON purchase_orders
+  FOR EACH ROW EXECUTE FUNCTION trg_po_no_exception_states();
+
+-- ===== supabase/migrations/20260819000029_atomic_document_numbers.sql =====
+-- BidPower — Document numbers that cannot repeat.
+-- Until now each "next number" was computed as MAX+1 inside its own short transaction and used later by another request,
+-- so two people creating a document at the same moment could get the same number (the unique rule then made one fail).
+-- A counter row per company, kind and year is raised atomically instead: two callers can never receive the same value.
+
+CREATE TABLE IF NOT EXISTS number_counters (
+  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,
+  year INTEGER NOT NULL DEFAULT 0,
+  last_value INTEGER NOT NULL,
+  PRIMARY KEY (company_id, kind, year)
+);
+ALTER TABLE number_counters ENABLE ROW LEVEL SECURITY;  -- no policies: only the functions below touch it
+
+-- p_floor is the highest number already used by existing rows, so the counter never falls behind them.
+CREATE OR REPLACE FUNCTION bump_number(p_company UUID, p_kind TEXT, p_year INTEGER, p_floor INTEGER)
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_value INTEGER;
+BEGIN
+  INSERT INTO number_counters AS n (company_id, kind, year, last_value)
+  VALUES (p_company, p_kind, p_year, p_floor + 1)
+  ON CONFLICT (company_id, kind, year) DO UPDATE SET last_value = GREATEST(n.last_value, p_floor) + 1
+  RETURNING n.last_value INTO v_value;
+  RETURN v_value;
+END;
+$$;
+REVOKE ALL ON FUNCTION bump_number(UUID, TEXT, INTEGER, INTEGER) FROM PUBLIC, anon, authenticated;
+
+CREATE OR REPLACE FUNCTION next_purchase_order_number(p_company UUID) RETURNS TEXT LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_year TEXT := to_char(NOW(), 'YYYY'); v_max INTEGER;
+BEGIN
+  IF p_company IS NULL OR p_company NOT IN (SELECT get_user_company_ids()) THEN RAISE EXCEPTION 'forbidden'; END IF;
+  SELECT COALESCE(MAX(NULLIF(regexp_replace(number, '^PO-' || v_year || '-', ''), number)::INTEGER), 0) INTO v_max FROM purchase_orders WHERE company_id = p_company AND number LIKE 'PO-' || v_year || '-%';
+  RETURN 'PO-' || v_year || '-' || lpad(bump_number(p_company, 'po', v_year::INTEGER, v_max)::text, 5, '0');
+END; $$;
+
+CREATE OR REPLACE FUNCTION next_material_request_number(p_company UUID) RETURNS TEXT LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_year TEXT := to_char(NOW(), 'YYYY'); v_max INTEGER;
+BEGIN
+  IF p_company IS NULL OR p_company NOT IN (SELECT get_user_company_ids()) THEN RAISE EXCEPTION 'forbidden'; END IF;
+  SELECT COALESCE(MAX(NULLIF(regexp_replace(number, '^MR-' || v_year || '-', ''), number)::INTEGER), 0) INTO v_max FROM material_requests WHERE company_id = p_company AND number LIKE 'MR-' || v_year || '-%';
+  RETURN 'MR-' || v_year || '-' || lpad(bump_number(p_company, 'mr', v_year::INTEGER, v_max)::text, 5, '0');
+END; $$;
+
+CREATE OR REPLACE FUNCTION next_pricing_request_number(p_company UUID) RETURNS TEXT LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_year TEXT := to_char(NOW(), 'YYYY'); v_max INTEGER;
+BEGIN
+  IF p_company IS NULL OR p_company NOT IN (SELECT get_user_company_ids()) THEN RAISE EXCEPTION 'forbidden'; END IF;
+  SELECT COALESCE(MAX(NULLIF(regexp_replace(number, '^PR-' || v_year || '-', ''), number)::INTEGER), 0) INTO v_max FROM supply_quote_requests WHERE company_id = p_company AND number LIKE 'PR-' || v_year || '-%';
+  RETURN 'PR-' || v_year || '-' || lpad(bump_number(p_company, 'pr', v_year::INTEGER, v_max)::text, 5, '0');
+END; $$;
+
+CREATE OR REPLACE FUNCTION next_quote_number(p_company UUID) RETURNS TEXT LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_year TEXT := to_char(NOW(), 'YYYY'); v_max INTEGER;
+BEGIN
+  IF p_company IS NULL OR p_company NOT IN (SELECT get_user_company_ids()) THEN RAISE EXCEPTION 'forbidden'; END IF;
+  SELECT COALESCE(MAX(NULLIF(regexp_replace(number, '^QT-' || v_year || '-', ''), number)::INTEGER), 0) INTO v_max FROM quotes WHERE company_id = p_company AND number LIKE 'QT-' || v_year || '-%';
+  RETURN 'QT-' || v_year || '-' || lpad(bump_number(p_company, 'qt', v_year::INTEGER, v_max)::text, 4, '0');
+END; $$;
+
+CREATE OR REPLACE FUNCTION next_invoice_number(p_company UUID) RETURNS TEXT LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_max INTEGER;
+BEGIN
+  IF p_company IS NULL OR p_company NOT IN (SELECT get_user_company_ids()) THEN RAISE EXCEPTION 'forbidden'; END IF;
+  SELECT COALESCE(MAX(substring(number from '^INV-(\d{1,9})$')::INTEGER), 0) INTO v_max FROM invoices WHERE company_id = p_company AND number ~ '^INV-\d{1,9}$';
+  RETURN 'INV-' || lpad(bump_number(p_company, 'inv', 0, v_max)::text, 4, '0');
+END; $$;
+REVOKE ALL ON FUNCTION next_invoice_number(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION next_invoice_number(UUID) TO authenticated;
+
+-- A payment is added to the invoice in one statement, so two payments at the same moment both count.
+-- It runs with the caller's own rights (row security still decides who may touch the invoice).
+CREATE OR REPLACE FUNCTION record_invoice_payment(p_invoice UUID, p_amount NUMERIC)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public
+AS $$
+BEGIN
+  IF p_amount IS NULL OR p_amount <= 0 OR p_amount > 100000000 THEN RAISE EXCEPTION 'invalid_amount'; END IF;
+  UPDATE invoices
+     SET amount_paid = LEAST(total, amount_paid + p_amount),
+         status = CASE WHEN LEAST(total, amount_paid + p_amount) >= total THEN 'paid' ELSE 'partial' END,
+         updated_at = NOW()
+   WHERE id = p_invoice AND status <> 'cancelled';
+  IF NOT FOUND THEN RAISE EXCEPTION 'invoice_transition_invalid'; END IF;
+END;
+$$;
+REVOKE ALL ON FUNCTION record_invoice_payment(UUID, NUMERIC) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION record_invoice_payment(UUID, NUMERIC) TO authenticated;
+
+-- ===== supabase/migrations/20260820000030_clients_visibility.sql =====
+-- BidPower — Customers are not for every member.
+-- Until now any member of the company (including field employees) could read the whole customer list through the API.
+-- Owners and managers keep seeing every client. Anyone else sees only the clients of the projects they can already see
+-- (their assigned projects), which is what they need on the job site.
+
+DROP POLICY IF EXISTS "Members can view clients" ON clients;
+DROP POLICY IF EXISTS "Members can view company data" ON clients;
+DROP POLICY IF EXISTS "Clients visible by role or project" ON clients;
+
+CREATE POLICY "Clients visible by role or project"
+  ON clients FOR SELECT
+  USING (
+    company_id IN (SELECT get_user_company_ids())
+    AND (
+      get_user_role(company_id) IN ('owner', 'manager')
+      OR id IN (SELECT client_id FROM projects)  -- projects already limits employees to their assignments
+    )
+  );

@@ -2,11 +2,12 @@ import { redirect } from "next/navigation";
 import { getActionContext } from "@/lib/action-context";
 import { createClient } from "@/lib/supabase/server";
 import FeedbackClient from "./FeedbackClient";
+import { logged } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
 
 export default async function FeedbackPage({ searchParams }: { searchParams: Promise<{ from?: string }> }) {
-  const c = await getActionContext().catch(() => null);
+  const c = await getActionContext().catch(logged("/feedback", null));
   if (!c) redirect("/dashboard");
   const { from } = await searchParams;
   const supabase = await createClient();

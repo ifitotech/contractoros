@@ -6,12 +6,13 @@ import { getQuotes } from "@/lib/services/quotes";
 import { getInvoices } from "@/lib/services/invoices";
 import { getExpenses } from "@/lib/services/expenses";
 import ReportsClient from "./ReportsClient";
+import { logged, logError } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
 
 // Company-wide money is Owner/Manager information (employees only ever see their own project data).
 export default async function ReportsPage() {
-  const c = await getActionContext().catch(() => null);
+  const c = await getActionContext().catch(logged("/reports", null));
   if (!c || !(c.role === "owner" || c.role === "manager")) redirect("/dashboard");
   try {
     const companyId = c.companyId;
@@ -19,7 +20,8 @@ export default async function ReportsPage() {
     // Only approved/reimbursed expenses are real cost.
     const counted = (expenses ?? []).filter((e: { status?: string }) => e.status === "approved" || e.status === "reimbursed");
     return <ReportsClient metrics={metrics} projects={projects} quotes={quotes} invoices={invoices} expenses={counted} />;
-  } catch {
+  } catch (error) {
+    logError("/reports", error);
     return <ReportsClient demo />;
   }
 }

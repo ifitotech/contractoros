@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { formatCurrency } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
-import { createQuoteAction } from "@/app/(dashboard)/actions";
+import { createQuoteAction } from "@/app/(dashboard)/quotes/actions";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 import { searchLibrary, splitQuantity, type LibraryItem } from "@/lib/materials";
 

@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useI18n } from "@/lib/i18n/provider";
-import { updateClientAction, archiveClientAction } from "@/app/(dashboard)/actions";
+import { updateClientAction, archiveClientAction } from "@/app/(dashboard)/clients/actions";
 
 type ClientData = { id: string; name: string; contact_name: string | null; email: string | null; phone: string | null; address: string | null; notes: string | null };
 

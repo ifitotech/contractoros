@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useI18n } from "@/lib/i18n/provider";
-import { updateProjectAction, archiveProjectAction } from "@/app/(dashboard)/actions";
+import { updateProjectAction, archiveProjectAction } from "@/app/(dashboard)/projects/actions";
 
 type EditableProject = { id: string; name: string; address: string; status: string; contract_value: number; description: string };
 

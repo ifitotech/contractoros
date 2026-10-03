@@ -79,7 +79,15 @@ export default function PricingDetail({ request: r, suppliers, invitations = [],
       </div>
     </div>
     {error && <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
+    {(() => {
+      // Four steps, always in this order. The current one is the first that is not done yet.
+      const done = [true, invitations.length > 0 || r.status !== "draft", r.responses.length > 0, r.status === "converted_to_po" || r.status === "awarded" || r.responses.some((x) => x.status === "accepted")];
+      const current = done.findIndex((d) => !d);
+      const labels = [t("prStep1"), t("prStep2"), t("prStep3"), t("prStep4")];
+      return <ol className="mb-5 grid grid-cols-4 gap-1.5" aria-label={t("prSteps")}>{labels.map((label, i) => <li key={i} aria-current={i === current ? "step" : undefined} className={`rounded-lg px-2 py-2 text-center text-[11px] font-semibold leading-tight ${done[i] ? "bg-green-100 text-green-800" : i === current ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-500"}`}><span className="block text-sm">{done[i] ? "✓" : i + 1}</span>{label}</li>)}</ol>;
+    })()}
     {r.notes && <p className="mb-4 whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-sm">{r.notes}</p>}
+    <h2 className="mb-2 font-semibold">{t("prStep1Title")}</h2>
 
     <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">{r.items.map((i) => <li key={i.id} className="flex items-start gap-3 px-4 py-3 text-sm">
       <div className="min-w-0 flex-1"><p className="break-words font-medium">{i.description}</p>{i.allow_substitution && <p className="text-xs text-slate-400">{t("substitutionOk")}</p>}</div>
@@ -108,7 +116,7 @@ export default function PricingDetail({ request: r, suppliers, invitations = [],
     {canManage && <SupplierLinks request={r} suppliers={suppliers} invitations={invitations} questions={questions} isOpen={isOpen} onChange={() => router.refresh()} />}
 
     <section className="mt-8">
-      <div className="mb-2 flex items-center gap-2"><h2 className="flex-1 font-semibold">{t("supplierResponses")}</h2>
+      <div className="mb-2 flex items-center gap-2"><h2 className="flex-1 font-semibold">{t("prStep3Title")}</h2>
         {canManage && isOpen && <button type="button" onClick={() => setShowForm((v) => !v)} className="min-h-10 rounded-lg border border-brand-500 bg-brand-50 px-3 text-sm font-semibold text-brand-700">{t("recordResponse")}</button>}</div>
       {!pricesVisible && <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-500">{t("pricesHidden")}</p>}
       {canManage && showForm && <ResponseForm request={r} suppliers={suppliers} onDone={() => { setShowForm(false); router.refresh(); }} />}
@@ -249,7 +257,7 @@ function SupplierLinks({ request: r, suppliers, invitations, questions, isOpen, 
   const status = (i: InvitationView) => i.revoked_at ? t("linkRevoked") : new Date(i.expires_at) < new Date() ? t("linkExpires", { date: formatDate(i.expires_at) }) : i.first_opened_at ? t("linkOpened", { date: formatDate(i.first_opened_at) }) : t("linkNotOpened");
 
   return <section className="mt-8">
-    <h2 className="mb-2 font-semibold">{t("supplierLinks")}</h2>
+    <h2 className="mb-2 font-semibold">{t("prStep2Title")}</h2>
     {error && <div role="alert" className="mb-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
     {sentInApp && <div role="status" className="mb-3 rounded-xl border border-green-300 bg-green-50 p-3 text-sm">{t("sentToSupplyAccount", { name: sentInApp })}</div>}
     {fresh && <div className="mb-3 rounded-xl border border-green-300 bg-green-50 p-3">

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useI18n } from "@/lib/i18n/provider";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
-import { inviteEmployeeAction } from "@/app/(dashboard)/actions";
+import { inviteEmployeeAction } from "@/app/(dashboard)/employees/actions";
 
 export default function InviteEmployeePage() {
   const router = useRouter();

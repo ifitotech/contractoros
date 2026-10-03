@@ -120,7 +120,7 @@ export default function PODetail({ po, isReviewer, isCreator, canSend, canUpload
         <button type="button" disabled={busy} onClick={() => fileRef.current?.click()} className={`${btn} flex w-full items-center justify-center gap-2 border border-dashed border-slate-300`}><Upload className="h-4 w-4" />{t("uploadDocument")}</button>
         <p className="text-xs text-slate-400">PDF, JPG, PNG, WEBP · 10 MB</p>
       </div> : <div className="space-y-2">
-        <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => uploadPhoto(e.target.files?.[0])} />
+        <input ref={cameraRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={(e) => uploadPhoto(e.target.files?.[0])} />
         <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => uploadPhoto(e.target.files?.[0])} />
         <button type="button" disabled={busy} onClick={() => cameraRef.current?.click()} className={`${btn} flex w-full items-center justify-center gap-2 bg-brand-600 text-white`}><Camera className="h-5 w-5" />{t("takeReceiptPhoto")}</button>
         <button type="button" disabled={busy} onClick={() => fileRef.current?.click()} className={`${btn} flex w-full items-center justify-center gap-2 border border-slate-200`}><Upload className="h-4 w-4" />{t("chooseReceiptPhoto")}</button>

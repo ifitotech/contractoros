@@ -37,8 +37,19 @@ export default function ContractorsView({ rows, error = false }: { rows: Contrac
       <h2 className="mb-2 font-semibold">{t("supplyConnectCode")}</h2>
       <p className="mb-3 text-xs text-slate-500">{t("supplyConnectCodeHint")}</p>
       <div className="flex gap-2"><input value={label} maxLength={80} aria-label={t("supplyCodeLabel")} placeholder={t("supplyCodeLabel")} onChange={(e) => setLabel(e.target.value)} className={field} /><button type="button" disabled={busy} onClick={create} className="min-h-11 shrink-0 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white disabled:opacity-40">{t("supplyCreateCode")}</button></div>
-      {code && <div className="mt-3 rounded-lg border border-green-300 bg-green-50 p-3"><p className="break-all font-mono text-sm font-semibold" data-testid="connect-code">{code}</p><p className="mt-1 text-xs text-slate-600">{t("supplyCodeShownOnce")}</p>
-        <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { setMsg(t("errGeneric")); } }} className="mt-2 flex min-h-10 items-center gap-2 rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white"><Copy className="h-4 w-4" />{copied ? t("prCopied") : t("copyLink")}</button></div>}
+      {code && (() => {
+        const link = `${typeof window !== "undefined" ? window.location.origin : ""}/suppliers?code=${code}`;
+        return <div className="mt-3 rounded-lg border border-green-300 bg-green-50 p-3">
+          <p className="text-xs font-medium text-slate-600">{t("supplyShareLink")}</p>
+          <p className="mt-1 break-all text-sm font-semibold" data-testid="connect-link">{link}</p>
+          <p className="mt-2 text-xs text-slate-500">{t("supplyCodeAlso")} <span className="break-all font-mono font-semibold" data-testid="connect-code">{code}</span></p>
+          <p className="mt-1 text-xs text-slate-600">{t("supplyCodeOnce")}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { setMsg(t("errGeneric")); } }} className="flex min-h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium"><Copy className="h-4 w-4" />{copied ? t("copied") : t("supplyCopyLink")}</button>
+            <a href={`https://wa.me/?text=${encodeURIComponent(link)}`} target="_blank" rel="noopener noreferrer" className="flex min-h-10 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium">WhatsApp</a>
+          </div>
+        </div>;
+      })()}
     </section>
     <ul className="space-y-2">
       {rows.map((r) => <li key={r.connection_id} className="rounded-xl border border-slate-200 bg-white p-4">

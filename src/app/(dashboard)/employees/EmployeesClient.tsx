@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { useI18n } from "@/lib/i18n/provider";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
-import { revokeInvitationAction } from "@/app/(dashboard)/actions";
+import { revokeInvitationAction } from "@/app/(dashboard)/employees/actions";
 
 type Member = { id: string; role: string; is_active: boolean; profile?: { full_name?: string | null; email?: string | null } | null };
 type Invitation = { id: string; email: string; full_name: string | null; role: string; expires_at: string };

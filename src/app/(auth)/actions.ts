@@ -127,6 +127,9 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
   // Coming from an invitation link: go back to it so it can be accepted.
   const invite = String(formData.get("invite") || "");
   if (INVITE_TOKEN.test(invite)) redirect(`/invite/${invite}`);
+  const next = String(formData.get("next") || "");
+  // Only a path inside this app: never another site, never the login screens themselves.
+  if (/^\/(?!\/)[A-Za-z0-9\-_/.?=&%#]{0,300}$/.test(next) && !/^\/(login|register|forgot-password|reset-password)\b/.test(next)) redirect(next);
   redirect("/dashboard");
 }
 

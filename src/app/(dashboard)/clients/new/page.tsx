@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useI18n } from "@/lib/i18n/provider";
-import { createClientAction } from "../../actions";
+import { createClientAction } from "../actions";
 import { toast } from "@/components/ui/Toast";
 
 export default function NewClientPage() {

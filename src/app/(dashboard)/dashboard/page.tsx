@@ -7,6 +7,7 @@ import { getEmployeeHome } from "@/lib/services/employee-home";
 import { getTeamPurchases } from "@/lib/services/team-purchases";
 import DashboardClient from "./DashboardClient";
 import EmployeeHome from "./EmployeeHome";
+import { logged, logError } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +32,9 @@ export default async function DashboardPage() {
       getCurrentProfile(),
       getProjects(companyId),
       // Attention data is optional context; the project list must still render without it.
-      getDashboardMetrics(companyId).catch(() => null),
-      getActionContext().then((c) => getNeedsAttention(c)).catch(() => []),
-      member.role === "owner" ? getOnboardingProgress(companyId).catch(() => []) : Promise.resolve([]),
+      getDashboardMetrics(companyId).catch(logged("/dashboard", null)),
+      getActionContext().then((c) => getNeedsAttention(c)).catch(logged("/dashboard", [])),
+      member.role === "owner" ? getOnboardingProgress(companyId).catch(logged("/dashboard", [])) : Promise.resolve([]),
       isReviewer ? getActionContext().then((c) => getTeamPurchases({ companyId, userId: c.userId, canCosts: member.role === "owner" || c.perms.can_view_costs })).catch(() => undefined) : Promise.resolve(undefined),
     ]);
     const company = member.company as { name?: string } | null;
@@ -50,7 +51,8 @@ export default async function DashboardPage() {
         team={team}
       />
     );
-  } catch {
+  } catch (error) {
+    logError("/dashboard", error);
     return <DashboardClient error="errLoadProjects" firstName="" companyName="" projects={[]} attention={{ invoices: 0, quotes: 0 }} items={[]} />;
   }
 }

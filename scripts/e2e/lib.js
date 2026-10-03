@@ -63,3 +63,32 @@ exports.inviteEmployee = async (browser, owner, name, email, template, projectId
   }
   return emp;
 };
+
+/** A material list from pasted lines ("20 x EMT" per line). Returns the list URL. */
+exports.createList = async (page, projectId, pasted, count) => {
+  await page.goto(`${B}/projects/${projectId}/materials/new`);
+  await page.getByRole("button", { name: /Pegar lista|Paste list/ }).click();
+  await page.locator("textarea").first().fill(pasted);
+  await page.getByRole("button", { name: new RegExp(`Agregar ${count} líneas|Add ${count} lines`) }).click();
+  await page.getByRole("button", { name: /Enviar pedido|Send request/ }).click();
+  await page.waitForURL(/materials\/[0-9a-f-]{36}$/, { timeout: 30000 });
+  return page.url();
+};
+
+/** Buy now from a one-line list: the only way to make a purchase order. Resolves when the PO page opens, or returns false if refused. */
+exports.buyOne = async (page, projectId, vendor, amount) => {
+  await exports.createList(page, projectId, `1 x ${vendor} item`, 1).catch(async () => {
+    await page.goto(`${B}/projects/${projectId}/materials/new`);
+    await page.getByPlaceholder(/Busca un ítem|Search an item/).fill(`${vendor} item x 1`);
+    await page.keyboard.press("Enter");
+    await page.getByRole("button", { name: /Enviar pedido|Send request/ }).click();
+    await page.waitForURL(/materials\/[0-9a-f-]{36}$/, { timeout: 30000 });
+  });
+  await page.getByRole("button", { name: /Comprar ya|Buy now/ }).click();
+  const sel = page.locator("select").filter({ has: page.locator("option", { hasText: /Otro|Other/ }) });
+  if (await sel.count()) await sel.first().selectOption("other");
+  await page.getByLabel(/^Supplier$|^Fornecedor$/).fill(vendor);
+  await page.getByLabel(/Monto estimado|Estimated amount/).fill(String(amount));
+  await page.getByRole("button", { name: /Crear orden de compra|Create purchase order/ }).click();
+  try { await page.waitForURL(/\/pos\/[0-9a-f-]{36}$/, { timeout: 15000 }); return page.url(); } catch { return false; }
+};

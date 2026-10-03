@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { ThemeProvider } from "@/lib/theme/provider";
 import { defaultLocale, locales, type Locale } from "@/lib/i18n";
+import { ServiceWorkerRegister } from "@/components/shared/ServiceWorkerRegister";
 import "./globals.css";
 
 async function initialLocale(): Promise<Locale> {
@@ -59,6 +60,7 @@ export default async function RootLayout({
     <html lang={locale}>
       <body>
         <ThemeProvider><I18nProvider initialLocale={locale}>{children}</I18nProvider></ThemeProvider>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

@@ -15,10 +15,12 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [invite, setInvite] = useState("");
+  const [next, setNext] = useState("");
 
   useEffect(() => {
     // Keep only the invitation token, then remove the query string from the address bar.
     setInvite(new URLSearchParams(window.location.search).get("invite") ?? "");
+    setNext(new URLSearchParams(window.location.search).get("next") ?? "");
     if (window.location.search) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -69,6 +71,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="hidden" name="invite" value={invite} />
+          <input type="hidden" name="next" value={next} />
           <div>
             <label className="text-xs text-brand-200 mb-1 block">{t("email")}</label>
             <input

@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/Button";
 import { formatCurrency } from "@/lib/utils";
 import { ProjectStatusBadge, QuoteStatusBadge } from "@/components/shared/StatusBadge";
 import { useI18n } from "@/lib/i18n/provider";
+import { invoiceStatusKey } from "@/lib/invoice-status";
 
 type Client = { id: string; name: string; contact_name?: string | null; company?: string | null; email?: string | null; phone?: string | null; address?: string | null; notes?: string | null; is_active?: boolean; projects?: { id: string; name: string; status: string; contract_value?: number }[]; quotes?: { id: string; number: string; status: string; total?: number; notes?: string | null }[] };
 
-export default function ClientDetailClient({ client }: { client: Client }) {
+type Billing = { owed: number; invoices: { id: string; number: string; status: string; total: number; amount_paid: number }[] };
+
+export default function ClientDetailClient({ client, billing = null }: { client: Client; billing?: Billing | null }) {
   const { t } = useI18n();
   const c = client;
   return <div className="p-4 md:p-8 max-w-3xl">
@@ -20,5 +23,9 @@ export default function ClientDetailClient({ client }: { client: Client }) {
     {c.notes && <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-6 text-sm text-amber-900">{c.notes}</div>}
     <div className="flex flex-wrap gap-2 mb-6"><Link href={`/projects/new?clientId=${c.id}`}><Button size="sm"><Briefcase className="w-4 h-4" />{t("newProject")}</Button></Link><Link href={`/quotes/new?clientId=${c.id}`}><Button size="sm" variant="outline"><FileText className="w-4 h-4" />{t("newQuote")}</Button></Link></div>
     <section className="space-y-4"><div><h2 className="font-semibold mb-2">{t("projects")}</h2><div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">{(c.projects || []).length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-400">{t("noResults")}</p> : c.projects?.map((p) => <Link key={p.id} href={`/projects/${p.id}`} className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50"><div><p className="text-sm font-medium">{p.name}</p><div className="mt-1"><ProjectStatusBadge status={p.status} /></div></div><p className="text-sm font-semibold">{formatCurrency(Number(p.contract_value || 0))}</p></Link>)}</div></div><div><h2 className="font-semibold mb-2">{t("quotes")}</h2><div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">{(c.quotes || []).length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-400">{t("noResults")}</p> : c.quotes?.map((q) => <Link key={q.id} href={`/quotes/${q.id}`} className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50"><div><p className="text-sm font-medium">{q.number}</p><div className="mt-1"><QuoteStatusBadge status={q.status} /></div></div><p className="text-sm font-semibold">{formatCurrency(Number(q.total || 0))}</p></Link>)}</div></div></section>
+    {billing && billing.invoices.length > 0 && <section className="mt-6" aria-label={t("navInvoices")}>
+      <div className="mb-2 flex items-baseline justify-between gap-3"><h2 className="font-semibold">{t("navInvoices")}</h2>{billing.owed > 0 && <p className="text-sm font-semibold text-amber-700">{t("clientOwes", { amount: formatCurrency(billing.owed) })}</p>}</div>
+      <ul className="divide-y divide-slate-50 rounded-xl border border-slate-200 bg-white">{billing.invoices.map((i) => <li key={i.id}><Link href={`/invoices/${i.id}`} className="flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-slate-50"><span className="min-w-0"><span className="font-medium">{i.number}</span> <span className={`text-xs ${i.status === "overdue" ? "font-semibold text-red-600" : "text-slate-500"}`}>{t(invoiceStatusKey(i.status))}</span></span><span className="shrink-0 font-semibold">{formatCurrency(i.total)}</span></Link></li>)}</ul>
+    </section>}
   </div>;
 }

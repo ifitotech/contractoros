@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Package,
   ShoppingCart,
+  Send,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,7 +34,7 @@ export function Sidebar({ companyName = "", userName = "", role = "" }: { compan
   const isEmployee = role === "employee";
   const canCosts = role === "owner" || (role === "manager" && permissions.can_view_costs);
   // One area per question the person asks: what am I selling, buying, spending, who do I work with.
-  const sections: { label: string | null; items: { href: string; label: string; icon: typeof Home }[] }[] = [
+  const sections: { label: string | null; items: { href: string; label: string; icon: typeof Home; also?: string[] }[] }[] = [
     { label: null, items: [
       { href: "/dashboard", label: t("navHome"), icon: Home },
       { href: "/projects", label: t("navProjects"), icon: Briefcase },
@@ -43,11 +44,10 @@ export function Sidebar({ companyName = "", userName = "", role = "" }: { compan
       { href: "/invoices", label: t("navInvoices"), icon: FileSpreadsheet },
     ] }]),
     { label: t("areaPurchasing"), items: [
-      ...(permissions.can_request_material ? [{ href: "/material", label: t("navMaterial"), icon: Package }] : []),
-      ...(isManagerOrAbove || permissions.can_create_pricing_request ? [{ href: "/pricing", label: t("navPricing"), icon: Package }] : []),
+      // Material is one place: lists and the library hang from its page, not from the menu.
+      ...(permissions.can_request_material || permissions.can_manage_library ? [{ href: "/material", label: t("navMaterial"), icon: Package, also: ["/materials"] }] : []),
+      ...(isManagerOrAbove || permissions.can_create_pricing_request ? [{ href: "/pricing", label: t("navPricing"), icon: Send }] : []),
       ...(isManagerOrAbove || permissions.can_create_po ? [{ href: "/pos", label: t("navPurchaseOrders"), icon: ShoppingCart }] : []),
-      ...(isManagerOrAbove ? [{ href: "/materials/requests", label: t("materialRequests"), icon: Package }] : []),
-      ...(permissions.can_manage_library ? [{ href: "/materials", label: t("materialsLibrary"), icon: Package }] : []),
     ] },
     { label: t("areaMoney"), items: [
       { href: "/expenses", label: t("navExpenses"), icon: Receipt },
@@ -101,11 +101,11 @@ export function Sidebar({ companyName = "", userName = "", role = "" }: { compan
   );
 }
 
-function NavSection({ label, items, pathname }: { label: string | null; items: { href: string; label: string; icon: typeof Home; badge?: number }[]; pathname: string }) {
+function NavSection({ label, items, pathname }: { label: string | null; items: { href: string; label: string; icon: typeof Home; badge?: number; also?: string[] }[]; pathname: string }) {
   return <>
     {label && <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 mt-5 first:mt-0">{label}</p>}
     {items.map((item) => {
-      const active = pathname === item.href || pathname.startsWith(item.href + "/");
+      const active = [item.href, ...(item.also ?? [])].some((h) => pathname === h || pathname.startsWith(h + "/"));
       return <Link key={item.href} href={item.href} className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition", active ? "bg-brand-50 text-brand-700 font-semibold" : "text-slate-700 hover:bg-slate-50")}><item.icon className={cn("h-5 w-5", active ? "text-brand-600" : "text-slate-400")} />{item.label}{item.badge ? <span className="ml-auto rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">{item.badge}</span> : null}</Link>;
     })}
   </>;

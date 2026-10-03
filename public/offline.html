@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B1F3B">
+<title>BidPower</title>
+<style>
+  html,body{margin:0;min-height:100dvh;background:#0B1F3B;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  main{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px calc(24px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left))}
+  img{width:96px;height:96px;border-radius:22px;margin-bottom:20px}
+  h1{font-size:22px;margin:0 0 8px}
+  p{margin:0 0 24px;color:#b6c4dc;max-width:320px;line-height:1.45}
+  button{min-height:48px;padding:0 28px;border:0;border-radius:14px;background:#2563eb;color:#fff;font-size:16px;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+  <img src="/icons/app-icon-192.png" alt="BidPower">
+  <h1 id="t"></h1>
+  <p id="m"></p>
+  <button id="b" type="button"></button>
+</main>
+<script>
+  var T = {
+    es: ["Sin conexión", "No hay internet en este momento. Cuando vuelva, tu información sigue aquí.", "Reintentar"],
+    en: ["You are offline", "There is no internet right now. When it is back, your information is still here.", "Try again"],
+    pt: ["Sem conexão", "Não há internet no momento. Quando voltar, suas informações continuam aqui.", "Tentar de novo"]
+  };
+  var lang = (navigator.language || "es").slice(0, 2); if (!T[lang]) lang = "es";
+  document.documentElement.lang = lang;
+  document.getElementById("t").textContent = T[lang][0];
+  document.getElementById("m").textContent = T[lang][1];
+  var b = document.getElementById("b"); b.textContent = T[lang][2]; b.onclick = function () { location.reload(); };
+  window.addEventListener("online", function () { location.reload(); });
+</script>
+</body>
+</html>

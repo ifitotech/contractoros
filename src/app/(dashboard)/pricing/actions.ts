@@ -38,6 +38,8 @@ export async function createPricingRequestAction(input: PricingInput): Promise<P
   if (!c) return { errorCode: "errGeneric" };
   if (!c.perms.can_create_pricing_request) return { errorCode: "errForbidden" };
   if (!input || !Array.isArray(input.lines)) return { errorCode: "errGeneric" };
+  // A quote request always starts from a material list (the cart); there is no blank form.
+  if (!input.materialRequestId) return { errorCode: "errPricingNeedsList" };
   if (input.projectId && !UUID.test(input.projectId)) return { errorCode: "errGeneric" };
   if (input.materialRequestId && !UUID.test(input.materialRequestId)) return { errorCode: "errGeneric" };
   if (input.bidDate && !/^\d{4}-\d{2}-\d{2}$/.test(input.bidDate)) return { errorCode: "errGeneric" };

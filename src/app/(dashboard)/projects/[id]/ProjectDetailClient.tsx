@@ -10,7 +10,7 @@ import { categoryLabel } from "@/lib/category-label";
 import { useI18n } from "@/lib/i18n/provider";
 import { usePermissions } from "@/lib/permissions-context";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
-import { setProjectAssignmentAction } from "@/app/(dashboard)/actions";
+import { setProjectAssignmentAction } from "@/app/(dashboard)/employees/actions";
 import type { ProjectMoney, TimelineItem, WaitingItem } from "@/lib/services/project-control";
 import { ActivityPanel, MoneyPanel, WaitingPanel } from "./ProjectControl";
 
@@ -55,7 +55,7 @@ function ProjectTeam({ projectId, people }: { projectId: string; people: TeamPer
   </section>;
 }
 
-export default function ProjectDetailClient({ project: p, error, team = [], canManageTeam = false, money = null, waiting = [], timeline = [] }: { project?: Project; error?: "errNoSupabase" | "errLoadProject"; team?: TeamPerson[]; canManageTeam?: boolean; money?: ProjectMoney | null; waiting?: WaitingItem[]; timeline?: TimelineItem[] }) {
+export default function ProjectDetailClient({ project: p, error, team = [], canManageTeam = false, money = null, waiting = [], timeline = [], billing = null }: { billing?: { invoiced: number; collected: number; owed: number } | null; project?: Project; error?: "errNoSupabase" | "errLoadProject"; team?: TeamPerson[]; canManageTeam?: boolean; money?: ProjectMoney | null; waiting?: WaitingItem[]; timeline?: TimelineItem[] }) {
   const { t, locale } = useI18n();
   const { isManagerOrAbove, permissions } = usePermissions();
   const back = <Link href="/projects" aria-label={t("projects")} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100"><ArrowLeft className="h-4 w-4" /></Link>;
@@ -67,11 +67,11 @@ export default function ProjectDetailClient({ project: p, error, team = [], canM
   const tools = [
     ...(isManagerOrAbove || permissions.can_create_pricing_request ? [{ href: `/projects/${p.id}/takeoff`, label: t("takeoffs"), icon: Zap }] : []),
     ...(permissions.can_request_material || isManagerOrAbove ? [{ href: `/projects/${p.id}/materials`, label: t("materialRequests"), icon: Package }] : []),
-    { href: "/expenses", label: t("expenses"), icon: Receipt },
-    { href: "/pos", label: t("toolPOs"), icon: ShoppingCart },
+    { href: `/expenses?projectId=${p.id}`, label: t("expenses"), icon: Receipt },
+    { href: `/pos?projectId=${p.id}`, label: t("toolPOs"), icon: ShoppingCart },
     ...(isManagerOrAbove ? [
-      { href: "/quotes", label: t("toolQuotes"), icon: FileText },
-      { href: "/invoices", label: t("toolInvoices"), icon: ClipboardList },
+      { href: `/quotes?projectId=${p.id}`, label: t("toolQuotes"), icon: FileText },
+      { href: `/invoices?projectId=${p.id}`, label: t("toolInvoices"), icon: ClipboardList },
     ] : []),
     { href: "/calendar", label: t("calendar"), icon: CalendarDays },
   ];
@@ -98,6 +98,11 @@ export default function ProjectDetailClient({ project: p, error, team = [], canM
         <dl className="space-y-2 text-sm">
           {!costsHidden && <div className="flex justify-between gap-3"><dt className="text-slate-500">{t("contractValue")}</dt><dd className="font-semibold">{formatCurrency(Number(p.contract_value))}</dd></div>}
           {!profitHidden && <div className="flex justify-between gap-3"><dt className="text-slate-500">{t("profit")}</dt><dd className={`font-semibold ${p.profit >= 0 ? "text-green-600" : "text-red-600"}`}>{formatCurrency(p.profit)} · {p.margin.toFixed(1)}%</dd></div>}
+          {billing && billing.invoiced > 0 && <>
+            <div className="flex justify-between gap-3"><dt className="text-slate-500">{t("invBilled")}</dt><dd className="font-semibold">{formatCurrency(billing.invoiced)}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-slate-500">{t("projCollected")}</dt><dd className="font-semibold text-green-600">{formatCurrency(billing.collected)}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-slate-500">{t("projOwed")}</dt><dd className="font-semibold text-amber-600">{formatCurrency(billing.owed)}</dd></div>
+          </>}
           {p.start_date && <div className="flex justify-between gap-3"><dt className="text-slate-500">{t("startDate")}</dt><dd className="font-medium">{formatDate(p.start_date, locale)}</dd></div>}
           {p.client?.contact_name && <div className="flex justify-between gap-3"><dt className="text-slate-500">{t("contactPerson")}</dt><dd className="font-medium">{p.client.contact_name}</dd></div>}
           {p.client?.phone && <div className="flex justify-between gap-3"><dt className="text-slate-500">{t("phone")}</dt><dd className="font-medium">{p.client.phone}</dd></div>}

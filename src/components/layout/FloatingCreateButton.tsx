@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Building2, CalendarPlus, ClipboardList, FileText, PackagePlus, Plus, Receipt, Send, ShoppingCart, Upload, UserPlus, Users, X } from "lucide-react";
+import { Building2, CalendarPlus, FileText, PackagePlus, Plus, Receipt, Send, ShoppingCart, Upload, UserPlus, Users, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n/provider";
 import { usePermissions } from "@/lib/permissions-context";
 
@@ -21,7 +21,7 @@ export function FloatingCreateButton() {
   const can = {
     project: isManagerOrAbove, material: permissions.can_request_material, proposal: isManagerOrAbove,
     expense: isManagerOrAbove || permissions.can_upload_documents, quotes: isManagerOrAbove || permissions.can_create_pricing_request,
-    po: permissions.can_create_po, library: permissions.can_manage_library, invoice: isManagerOrAbove, team: isOwner,
+    library: permissions.can_manage_library, invoice: isManagerOrAbove, team: isOwner,
   };
   const A = {
     project: { href: "/projects/new", label: t("newProject"), icon: CalendarPlus },
@@ -30,7 +30,6 @@ export function FloatingCreateButton() {
     proposal: { href: "/quotes/new", label: t("createProposal"), icon: FileText },
     expense: { href: "/expenses/new", label: t("newExpense"), icon: Receipt },
     quotes: { href: "/pricing/new", label: t("newPricingRequest"), icon: Send },
-    po: { href: "/pos/new", label: t("newPurchaseOrder"), icon: ClipboardList },
     supplier: { href: "/suppliers#new-supplier", label: t("addSupplier"), icon: Building2 },
     item: { href: "/materials?add=1", label: t("addItem"), icon: PackagePlus },
     importList: { href: "/materials?import=1", label: t("importCsv"), icon: Upload },
@@ -46,16 +45,16 @@ export function FloatingCreateButton() {
   const projectLists = pathname.match(new RegExp(`^/projects/(${UUID_PATH})/materials/?$`));
   if (/\/(new|edit|invite)\/?$/.test(pathname) || /^\/(settings|feedback|accounting|reports|more|notifications|supply)/.test(pathname)) hidden = true;
   if (hidden) actions = [];
-  else if (detail) actions = pick([[can.material, { href: `/projects/${detail[1]}/materials/new`, label: t("newMaterialRequest"), icon: ShoppingCart }], [can.po, A.po], [can.expense, A.expense]]);
+  else if (detail) actions = pick([[can.material, { href: `/projects/${detail[1]}/materials/new`, label: t("newMaterialRequest"), icon: ShoppingCart }], [can.expense, A.expense]]);
   else if (projectLists) actions = pick([[can.material, { href: `/projects/${projectLists[1]}/materials/new`, label: t("newMaterialRequest"), icon: ShoppingCart }]]);
   else if (pathname.startsWith("/projects")) actions = pick([[can.project, A.project], [can.project, A.client]]);
   else if (pathname.startsWith("/clients")) actions = pick([[can.project, A.client], [can.project, A.project], [can.proposal, A.proposal]]);
   else if (pathname.startsWith("/quotes")) actions = pick([[can.proposal, A.proposal], [can.project, A.client]]);
   else if (pathname.startsWith("/suppliers")) actions = pick([[isManagerOrAbove, A.supplier], [can.quotes, A.quotes], [can.material, A.material]]);
   else if (pathname.startsWith("/pricing")) actions = pick([[can.quotes, A.quotes], [can.material, A.material]]);
-  else if (pathname.startsWith("/pos")) actions = pick([[can.po, A.po], [can.material, A.material]]);
+  else if (pathname.startsWith("/pos")) actions = pick([[can.material, A.material], [can.quotes, A.quotes]]);
   else if (pathname.startsWith("/materials")) actions = pick([[can.library, A.item], [can.library, A.importList], [can.material, A.material]]);
-  else if (pathname.startsWith("/material")) actions = pick([[can.quotes, A.quotes], [can.po, A.po]]);
+  else if (pathname.startsWith("/material")) actions = pick([[can.quotes, A.quotes]]);
   else if (pathname.startsWith("/expenses")) actions = pick([[can.expense, A.expense]]);
   else if (pathname.startsWith("/invoices")) actions = pick([[can.invoice, A.invoice], [can.project, A.proposal]]);
   else if (pathname.startsWith("/employees")) actions = pick([[can.team, A.invite]]);

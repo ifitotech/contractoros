@@ -29,6 +29,7 @@ export default function MaterialsClient({ items, lists, error = false, canViewCo
   const [importText, setImportText] = useState("");
   const params = useSearchParams();
   useEffect(() => {
+    if (params.get("q")) setQuery(params.get("q") as string);
     if (params.get("import")) setImporting(true);
     if (params.get("add")) setDraft({ ...EMPTY });
   }, [params]);

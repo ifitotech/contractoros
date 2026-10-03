@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { LocalDateTime } from "@/components/shared/LocalDateTime";
 import { useI18n } from "@/lib/i18n/provider";
 import { sendFeedbackAction } from "./actions";
 
@@ -32,6 +33,6 @@ export default function FeedbackClient({ from, previous }: { from: string; previ
       <Button type="submit" className="w-full" loading={busy} disabled={!text.trim()}>{t("feedbackSend")}</Button>
     </form>
     {previous.length > 0 && <section className="mt-6"><h2 className="mb-2 text-sm font-semibold text-slate-500">{t("feedbackMine")}</h2>
-      <ul className="space-y-2">{previous.map((f) => <li key={f.id} className="rounded-xl border border-slate-200 bg-white p-3 text-sm"><p className="whitespace-pre-wrap">{f.message}</p><p className="mt-1 text-xs text-slate-400">{new Date(f.created_at).toLocaleString(locale)}{f.page ? ` · ${f.page}` : ""}</p></li>)}</ul></section>}
+      <ul className="space-y-2">{previous.map((f) => <li key={f.id} className="rounded-xl border border-slate-200 bg-white p-3 text-sm"><p className="whitespace-pre-wrap">{f.message}</p><p className="mt-1 text-xs text-slate-400"><LocalDateTime value={f.created_at} />{f.page ? ` · ${f.page}` : ""}</p></li>)}</ul></section>}
   </div>;
 }

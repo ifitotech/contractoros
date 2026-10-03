@@ -1,3 +1,5 @@
+import { formatCurrency } from "@/lib/utils";
+import { getCompanyToday } from "@/lib/services/companies";
 import { createClient } from "@/lib/supabase/server";
 import { getControlFinancials } from "@/lib/finance";
 import type { Permissions } from "@/lib/permissions";
@@ -86,7 +88,6 @@ export type ProjectMoney = NonNullable<Awaited<ReturnType<typeof getProjectMoney
 
 export type AttentionItem = { id: string; titleKey: string; params: Record<string, string>; href: string; waitingOn: string; severity: "high" | "normal"; sort: number };
 
-const dayStart = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
 const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 
 /**
@@ -98,7 +99,8 @@ export async function getNeedsAttention(ctx: { companyId: string; userId: string
   const reviewer = ctx.role === "owner" || ctx.role === "manager";
   const items: AttentionItem[] = [];
   const add = (i: Omit<AttentionItem, "sort"> & { sort?: number }) => items.push({ ...i, sort: i.sort ?? 0 });
-  const today = dayStart(new Date());
+  // "Today" is the company's own date, not the server's (UTC).
+  const today = new Date(`${await getCompanyToday(ctx.companyId)}T00:00:00Z`);
   const tomorrow = isoDay(new Date(today.getTime() + 86400000));
   const soon = isoDay(new Date(today.getTime() + 3 * 86400000));
 
@@ -136,6 +138,26 @@ export async function getNeedsAttention(ctx: { companyId: string; userId: string
     for (const r of cr.data ?? []) add({ id: `cr-${r.id}`, titleKey: "attnChange", params: { name: (r.requested_by_name as string) || "" }, href: `/quotes/${r.quote_id}`, waitingOn: "owner", severity: "high", sort: 1 });
     for (const r of ex.data ?? []) add({ id: `ex-${r.id}`, titleKey: "attnExpense", params: { vendor: (r.vendor_name as string) || "—" }, href: `/expenses/${r.id}`, waitingOn: "owner", severity: "normal", sort: 4 });
     for (const r of qs.data ?? []) add({ id: `qe-${r.id}`, titleKey: "attnProposalExpiring", params: { number: r.number as string, date: r.valid_until as string }, href: `/quotes/${r.id}`, waitingOn: "customer", severity: "normal", sort: 5 });
+
+    // Money owed: approved proposals not yet fully billed, and invoices past their due date.
+    const [approved, late] = await Promise.all([
+      supabase.from("quotes").select("id, number, total").eq("company_id", ctx.companyId).eq("status", "approved").order("created_at", { ascending: false }).limit(30),
+      supabase.from("invoices").select("id, number, total, amount_paid, due_date").eq("company_id", ctx.companyId).in("status", ["sent", "partial", "overdue"]).lt("due_date", isoDay(today)).order("due_date").limit(8),
+    ]);
+    const approvedIds = (approved.data ?? []).map((q) => q.id as string);
+    if (approvedIds.length) {
+      const { data: billed } = await supabase.from("invoices").select("quote_id, total, status").eq("company_id", ctx.companyId).in("quote_id", approvedIds);
+      const sums = new Map<string, number>();
+      for (const b of billed ?? []) if (b.status !== "cancelled") sums.set(b.quote_id as string, (sums.get(b.quote_id as string) ?? 0) + Number(b.total));
+      for (const q of approved.data ?? []) {
+        const left = Math.round((Number(q.total) - (sums.get(q.id as string) ?? 0)) * 100) / 100;
+        if (left > 0.01 && Number(q.total) > 0) add({ id: `bill-${q.id}`, titleKey: "attnBillProposal", params: { number: q.number as string, amount: formatCurrency(left) }, href: `/invoices/new?quoteId=${q.id}`, waitingOn: "owner", severity: "normal", sort: 3 });
+      }
+    }
+    for (const i of late.data ?? []) {
+      const owed = Math.round((Number(i.total) - Number(i.amount_paid ?? 0)) * 100) / 100;
+      if (owed > 0.01) add({ id: `inv-${i.id}`, titleKey: "attnInvoiceOverdue", params: { number: i.number as string, amount: formatCurrency(owed), date: i.due_date as string }, href: `/invoices/${i.id}`, waitingOn: "customer", severity: "high", sort: 2 });
+    }
 
     if (ctx.perms.can_view_costs && (projects.data ?? []).length) {
       const ids = (projects.data ?? []).map((p) => p.id as string);

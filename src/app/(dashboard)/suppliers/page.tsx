@@ -2,12 +2,13 @@ import { redirect } from "next/navigation";
 import { getActionContext } from "@/lib/action-context";
 import { createClient } from "@/lib/supabase/server";
 import SuppliersClient, { type SupplierRow } from "./SuppliersClient";
+import { logged } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
 
 // Suppliers of the company (Owner/Manager). A supplier connected to a Supply account receives Pricing Requests in the app.
 export default async function SuppliersPage() {
-  const c = await getActionContext().catch(() => null);
+  const c = await getActionContext().catch(logged("/suppliers", null));
   if (!c || !(c.role === "owner" || c.role === "manager")) redirect("/dashboard");
   const supabase = await createClient();
   const [sup, conn] = await Promise.all([

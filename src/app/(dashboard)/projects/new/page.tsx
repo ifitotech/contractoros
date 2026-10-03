@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentMember } from "@/lib/auth";
 import { getClients } from "@/lib/services/clients";
 import NewProjectForm from "./NewProjectForm";
+import { logError } from "@/lib/log";
 
 export default async function NewProjectPage() {
   let clients: { id: string; name: string }[] = [];
@@ -13,7 +14,8 @@ export default async function NewProjectPage() {
       const rows = await getClients(member.company_id as string);
       clients = (rows ?? []).map((c: { id: string; name: string }) => ({ id: c.id, name: c.name }));
     }
-  } catch {
+  } catch (error) {
+    logError("/projects/new", error);
     // The form still works: the user can type a new client.
   }
   // Only owners and managers create projects (redirect must run outside try/catch).

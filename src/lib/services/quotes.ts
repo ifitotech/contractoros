@@ -98,7 +98,7 @@ export async function createQuote(
   return quote;
 }
 
-export async function getQuotes(companyId: string, statusFilter?: string) {
+export async function getQuotes(companyId: string, statusFilter?: string, projectId?: string) {
   const supabase = await createClient();
 
   let query = supabase
@@ -116,6 +116,7 @@ export async function getQuotes(companyId: string, statusFilter?: string) {
   if (statusFilter) {
     query = query.eq("status", statusFilter);
   }
+  if (projectId) query = query.eq("project_id", projectId);
 
   const { data, error } = await query;
   if (error) throw error;

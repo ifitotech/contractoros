@@ -46,7 +46,7 @@ export function formatMoney(n: number, locale = "en-US") {
 }
 
 /** Everything that comes from the database is escaped: this HTML is served from the app's own origin. */
-function esc(v: unknown): string {
+export function esc(v: unknown): string {
   return String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 

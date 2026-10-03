@@ -7,7 +7,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/lib/i18n/provider";
 import { categoryLabel } from "@/lib/category-label";
-import { addExpenseCategoryAction, setExpenseCategoryActiveAction } from "@/app/(dashboard)/actions";
+import { addExpenseCategoryAction, setExpenseCategoryActiveAction } from "@/app/(dashboard)/settings/actions";
 
 type Category = { id: string; name: string; is_system: boolean; is_active: boolean };
 

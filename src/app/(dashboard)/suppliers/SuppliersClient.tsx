@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Mail, Phone, Trash2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/provider";
@@ -28,6 +29,9 @@ export default function SuppliersClient({ rows, error = false }: { rows: Supplie
   const { t } = useI18n();
   const router = useRouter();
   const [code, setCode] = useState("");
+  const params = useSearchParams();
+  // A link from a supply house arrives with its connection code already filled in.
+  useEffect(() => { const c = params.get("code"); if (c) setCode(c.trim().slice(0, 24)); }, [params]);
   const [linkTo, setLinkTo] = useState("");
   const [name, setName] = useState("");
   const [contact, setContact] = useState({ name: "", email: "", phone: "" });

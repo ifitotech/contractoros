@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useI18n } from "@/lib/i18n/provider";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
-import { createProjectAction } from "@/app/(dashboard)/actions";
+import { createProjectAction } from "@/app/(dashboard)/projects/actions";
 
 export default function NewProjectForm({ clients }: { clients: { id: string; name: string }[] }) {
   const router = useRouter();
